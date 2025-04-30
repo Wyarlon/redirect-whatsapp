@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- 1. GTM (obrigatório no head para seu caso) -->
+    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
     
-    <!-- 2. Captura fbclid e redireciona -->
+    <!-- Captura e armazena o fbclid -->
     <script>
         const fbclid = new URLSearchParams(window.location.search).get('fbclid');
         if (fbclid) {
             localStorage.setItem('ultimo_fbclid', fbclid);
             console.log('fbclid salvo:', fbclid);
         }
-        setTimeout(() => { window.location.href = "https://wa.me/5512996450216?text=Quero+comprar"; }, 100);
+    </script>
+    
+    <!-- Redirecionamento para WhatsApp (universal) -->
+    <script>
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        const phone = "5512996430216";
+        const message = "Quero+comprar";
+        const whatsappUrl = isMobile 
+            ? `whatsapp://send?phone=${phone}&text=${message}` 
+            : `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+        
+        setTimeout(() => {
+            window.location.href = whatsappUrl;
+        }, 100);
     </script>
 </head>
 <body>
-    <!-- Fallback -->
-    <p>Redirecionando... <a href="https://wa.me/5512996450216?text=Quero+comprar">Clique aqui</a></p>
+    <p>Redirecionando para o WhatsApp...</p>
 </body>
 </html>
