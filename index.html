@@ -1,33 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
+    <meta charset="UTF-8">
+    <title>Redirecionando para WhatsApp</title>
     
-    <!-- Captura e armazena o fbclid -->
+    <!-- 1. Google Tag Manager -->
+    <script>(function(w,d,s,l,i){
+        w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+        var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+        j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+        f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','SEU-GTM-ID');</script>
+
+    <!-- 2. Captura e Armazena FBclID -->
     <script>
-        const fbclid = new URLSearchParams(window.location.search).get('fbclid');
-        if (fbclid) {
+        // Captura fbclid da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const fbclid = urlParams.get('fbclid');
+        
+        // Armazena no localStorage por 30 dias
+        if(fbclid) {
             localStorage.setItem('ultimo_fbclid', fbclid);
-            console.log('fbclid salvo:', fbclid);
+            console.log('FBclID armazenado:', fbclid);
+            
+            // Opcional: Envia para DataLayer (GTM)
+            window.dataLayer = window.dataLayer || [];
+            dataLayer.push({
+                'event': 'fbclid_capturado',
+                'fbclid': fbclid
+            });
         }
     </script>
-    
-    <!-- Redirecionamento para WhatsApp (universal) -->
+
+    <!-- 3. Redirecionamento Inteligente WhatsApp -->
     <script>
-        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-        const phone = "5512996430216";
-        const message = "Quero+comprar";
-        const whatsappUrl = isMobile 
-            ? `whatsapp://send?phone=${phone}&text=${message}` 
-            : `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
-        
-        setTimeout(() => {
+        function redirectToWhatsApp() {
+            const phone = "5511999999999"; // Seu número com DDD
+            const message = "Olá, quero comprar!"; // Mensagem codificada
+            const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+            
+            // Formato universal de link
+            const whatsappUrl = isMobile ?
+                `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}` :
+                `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+            
             window.location.href = whatsappUrl;
-        }, 100);
+        }
+        
+        // Redireciona após 100ms (tempo para salvar dados)
+        setTimeout(redirectToWhatsApp, 100);
     </script>
 </head>
 <body>
-    <p>Redirecionando para o WhatsApp...</p>
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=SEU-GTM-ID" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    
+    <p>Redirecionando para o WhatsApp... <a href="#" onclick="redirectToWhatsApp()">Clique aqui se não for redirecionado</a></p>
 </body>
 </html>
