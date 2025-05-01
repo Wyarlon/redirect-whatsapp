@@ -2,60 +2,109 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecionando para WhatsApp</title>
+    <style>
+        .debug-panel {
+            font-family: Arial, sans-serif;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 3px solid #28a745;
+            z-index: 9999;
+        }
+        .debug-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+    </style>
     
-    <!-- 1. Google Tag Manager -->
-    <script>(function(w,d,s,l,i){
-        w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
-        var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-        j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-        f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','SEU-GTM-ID');</script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
 
-    <!-- 2. Captura e Armazena FBclID -->
+    <!-- Sistema Inteligente de Redirecionamento -->
     <script>
-        // Captura fbclid da URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const fbclid = urlParams.get('fbclid');
-        
-        // Armazena no localStorage por 30 dias
-        if(fbclid) {
-            localStorage.setItem('ultimo_fbclid', fbclid);
-            console.log('FBclID armazenado:', fbclid);
+        // Configurações personalizáveis
+        const CONFIG = {
+            whatsappNumber: "5512996450216",
+            defaultMessage: "Olá, vi esse anuncio quero saber mais",
+            debugMode: new URLSearchParams(window.location.search).has('debug'),
+            fbclid: new URLSearchParams(window.location.search).get('fbclid') || ''
+        };
+
+        // Armazena dados para rastreamento
+        if(CONFIG.fbclid) {
+            localStorage.setItem('ultimo_fbclid', CONFIG.fbclid);
+            console.log('[RASTREIO] FBclID armazenado:', CONFIG.fbclid);
             
-            // Opcional: Envia para DataLayer (GTM)
             window.dataLayer = window.dataLayer || [];
             dataLayer.push({
                 'event': 'fbclid_capturado',
-                'fbclid': fbclid
+                'fbclid': CONFIG.fbclid,
+                'timestamp': new Date().toISOString()
             });
         }
-    </script>
 
-    <!-- 3. Redirecionamento Inteligente WhatsApp -->
-    <script>
+        // Função de redirecionamento inteligente
         function redirectToWhatsApp() {
-            const phone = "5512996450216"; // Seu número com DDD
-            const message = "Olá, quero comprar!"; // Mensagem codificada
+            const encodedMessage = encodeURIComponent(CONFIG.defaultMessage);
             const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-            
-            // Formato universal de link
             const whatsappUrl = isMobile ?
-                `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}` :
-                `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-            
-            window.location.href = whatsappUrl;
+                `whatsapp://send?phone=${CONFIG.whatsappNumber}&text=${encodedMessage}` :
+                `https://web.whatsapp.com/send?phone=${CONFIG.whatsappNumber}&text=${encodedMessage}`;
+
+            if(CONFIG.debugMode) {
+                showDebugPanel(whatsappUrl);
+                console.log('[DEBUG] Redirecionamento simulado:', whatsappUrl);
+            } else {
+                setTimeout(() => {
+                    window.location.href = whatsappUrl;
+                }, 150); // Tempo otimizado para GTM
+            }
         }
-        
-        // Redireciona após 100ms (tempo para salvar dados)
-        setTimeout(redirectToWhatsApp, 100);
+
+        // Painel de debug visual
+        function showDebugPanel(url) {
+            const panel = document.createElement('div');
+            panel.className = 'debug-panel';
+            panel.innerHTML = `
+                <h3>🚦 MODO DEBUG ATIVO</h3>
+                <p><strong>FBclID:</strong> ${CONFIG.fbclid || 'Não encontrado'}</p>
+                <p><strong>URL WhatsApp:</strong> ${url}</p>
+                <button class="debug-btn" onclick="window.location.href='${url}'">Testar Redirecionamento</button>
+                <button class="debug-btn" onclick="this.parentNode.remove()">Fechar Debug</button>
+            `;
+            document.body.appendChild(panel);
+        }
+
+        // Inicia o processo
+        redirectToWhatsApp();
     </script>
 </head>
 <body>
     <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=SEU-GTM-ID" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXX" height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     
-    <p>Redirecionando para o WhatsApp... <a href="#" onclick="redirectToWhatsApp()">Clique aqui se não for redirecionado</a></p>
+    <div style="text-align: center; margin-top: 50px;">
+        <p>Redirecionando para o WhatsApp...</p>
+        <p><small>Se não for redirecionado automaticamente, <a href="#" id="manualRedirect">clique aqui</a></small></p>
+    </div>
+
+    <script>
+        // Fallback manual
+        document.getElementById('manualRedirect').addEventListener('click', function(e) {
+            e.preventDefault();
+            redirectToWhatsApp();
+        });
+    </script>
 </body>
 </html>
