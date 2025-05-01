@@ -32,6 +32,17 @@
 
     <!-- Sistema Inteligente de Redirecionamento -->
     <script>
+        // Limpeza inicial do localStorage (remove dados desnecessários)
+        (function() {
+            const keysToKeep = ['ultimo_fbclid'];
+            Object.keys(localStorage).forEach(key => {
+                if (!keysToKeep.includes(key)) localStorage.removeItem(key);
+            });
+            
+            // Remove cookie do fbclid se existir
+            document.cookie = 'fbclid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        })();
+
         // Configurações personalizáveis
         const CONFIG = {
             whatsappNumber: "5512996450216",
@@ -65,33 +76,57 @@
                 showDebugPanel(whatsappUrl);
                 console.log('[DEBUG] Redirecionamento simulado:', whatsappUrl);
             } else {
-                setTimeout(() => {
-                    window.location.href = whatsappUrl;
-                }, 150); // Tempo otimizado para GTM
+                // Adicionado fallback com meta refresh
+                const fallbackHtml = `
+                    <meta http-equiv="refresh" content="3;url=${whatsappUrl}">
+                    <script>
+                        setTimeout(function() {
+                            window.location.href = '${whatsappUrl}';
+                        }, 150);
+                    </script>
+                `;
+                document.write(fallbackHtml);
             }
         }
 
-        // Painel de debug visual
+        // Painel de debug visual (versão segura)
         function showDebugPanel(url) {
             const panel = document.createElement('div');
             panel.className = 'debug-panel';
-            panel.innerHTML = `
-                <h3>🚦 MODO DEBUG ATIVO</h3>
-                <p><strong>FBclID:</strong> ${CONFIG.fbclid || 'Não encontrado'}</p>
-                <p><strong>URL WhatsApp:</strong> ${url}</p>
-                <button class="debug-btn" onclick="window.location.href='${url}'">Testar Redirecionamento</button>
-                <button class="debug-btn" onclick="this.parentNode.remove()">Fechar Debug</button>
-            `;
-            document.body.appendChild(panel);
+            
+            try {
+                panel.innerHTML = `
+                    <h3>🚦 MODO DEBUG ATIVO</h3>
+                    <p><strong>FBclID:</strong> ${CONFIG.fbclid || 'Não encontrado'}</p>
+                    <p><strong>URL WhatsApp:</strong> ${url}</p>
+                    <p><strong>LocalStorage:</strong> ${localStorage.getItem('ultimo_fbclid') || 'Vazio'}</p>
+                    <button class="debug-btn" onclick="window.location.href='${url}'">Testar Redirecionamento</button>
+                    <button class="debug-btn" onclick="this.parentNode.remove()">Fechar Debug</button>
+                `;
+                document.body.insertBefore(panel, document.body.firstChild);
+            } catch(e) {
+                console.error('Erro ao criar debug panel:', e);
+            }
         }
 
         // Inicia o processo
-        redirectToWhatsApp();
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                redirectToWhatsApp();
+            } catch(e) {
+                console.error('Erro no redirecionamento:', e);
+                // Fallback extremo
+                window.location.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.defaultMessage)}`;
+            }
+        });
     </script>
 </head>
 <body>
     <noscript>
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXX" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        <p style="text-align: center; margin-top: 50px;">
+            JavaScript está desativado. <a href="https://wa.me/5512996450216?text=Olá, vi esse anuncio quero saber mais">Clique aqui</a> para continuar.
+        </p>
     </noscript>
     
     <div style="text-align: center; margin-top: 50px;">
@@ -100,10 +135,14 @@
     </div>
 
     <script>
-        // Fallback manual
-        document.getElementById('manualRedirect').addEventListener('click', function(e) {
+        // Fallback manual seguro
+        document.getElementById('manualRedirect')?.addEventListener('click', function(e) {
             e.preventDefault();
-            redirectToWhatsApp();
+            try {
+                redirectToWhatsApp();
+            } catch {
+                window.location.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.defaultMessage)}`;
+            }
         });
     </script>
 </body>
