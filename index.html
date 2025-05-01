@@ -1,124 +1,23 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecionando para WhatsApp</title>
-    <style>
-        .debug-panel {
-            font-family: Arial, sans-serif;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #f8f9fa;
-            padding: 20px;
-            border-top: 3px solid #28a745;
-            z-index: 9999;
-        }
-        .debug-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .loading {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 18px;
-        }
-    </style>
-    
-    <!-- SANITIZAÇÃO INICIAL -->
-    <script>
-    (function() {
-        // Limpeza radical do storage
-        const keysToKeep = ['ultimo_fbclid'];
-        Object.keys(localStorage).forEach(key => {
-            if (!keysToKeep.includes(key)) localStorage.removeItem(key);
-        });
+<script>
+// SANITIZAÇÃO RADICAL (cole no <head>)
+(function() {
+  // 1. Corrige o nome da chave se existir versão errada
+  if (localStorage.getItem('ultimo_fbcfid')) {
+    localStorage.setItem('ultimo_fbclid', localStorage.getItem('ultimo_fbcfid'));
+    localStorage.removeItem('ultimo_fbcfid');
+  }
 
-        // Remove todos os cookies do domínio
-        document.cookie.split(';').forEach(c => {
-            const key = c.trim().split('=')[0];
-            document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${location.hostname}`;
-        });
+  // 2. Remove cookies do Facebook
+  ['fbclid', '_fbp', '_fbc'].forEach(cookie => {
+    document.cookie = `${cookie}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${location.hostname}`;
+  });
 
-        // Captura o fbclid da URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('fbclid')) {
-            const cleanFbclid = urlParams.get('fbclid').replace(/[^\w.-]/g, '');
-            localStorage.setItem('ultimo_fbclid', cleanFbclid);
-            console.log('[RASTREIO] FBclID armazenado:', cleanFbclid);
-        }
-    })();
-    </script>
-</head>
-<body>
-    <div class="loading">
-        <p>Redirecionando para o WhatsApp...</p>
-        <p><small>Se não for redirecionado automaticamente, <a href="#" id="manualRedirect">clique aqui</a></small></p>
-    </div>
-
-    <script>
-    // CONFIGURAÇÕES PRINCIPAIS (EDITÁVEIS)
-    const CONFIG = {
-        whatsappNumber: "5512996450216",  // SEU NÚMERO AQUI
-        defaultMessage: "Olá, vi seu anúncio e quero saber mais!",  // MENSAGEM PADRÃO
-        debugMode: new URLSearchParams(window.location.search).has('debug')
-    };
-
-    // FUNÇÃO DE REDIRECIONAMENTO
-    function redirectToWhatsApp() {
-        const encodedMsg = encodeURIComponent(CONFIG.defaultMessage);
-        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-        const whatsappUrl = isMobile ?
-            `whatsapp://send?phone=${CONFIG.whatsappNumber}&text=${encodedMsg}` :
-            `https://web.whatsapp.com/send?phone=${CONFIG.whatsappNumber}&text=${encodedMsg}`;
-
-        if (CONFIG.debugMode) {
-            showDebugPanel(whatsappUrl);
-        } else {
-            // Sistema de fallback em 3 camadas
-            try {
-                window.location.href = whatsappUrl;
-            } catch (e) {
-                document.body.innerHTML = `
-                    <meta http-equiv="refresh" content="0;url=${whatsappUrl}">
-                    <div class="loading">
-                        <p>Redirecionamento falhou. <a href="${whatsappUrl}">Clique para abrir manualmente</a></p>
-                    </div>
-                `;
-            }
-        }
-    }
-
-    // PAINEL DEBUG (APENAS EM MODO DEBUG)
-    function showDebugPanel(url) {
-        const panel = document.createElement('div');
-        panel.className = 'debug-panel';
-        panel.innerHTML = `
-            <h3>🚦 MODO DEBUG ATIVO</h3>
-            <p><strong>Número WhatsApp:</strong> ${CONFIG.whatsappNumber}</p>
-            <p><strong>FBclID:</strong> ${localStorage.getItem('ultimo_fbclid') || 'Não encontrado'}</p>
-            <p><strong>URL Gerada:</strong> ${url}</p>
-            <button class="debug-btn" onclick="window.location.href='${url}'">Testar Redirecionamento</button>
-            <button class="debug-btn" onclick="this.parentNode.remove()">Fechar Debug</button>
-        `;
-        document.body.appendChild(panel);
-    }
-
-    // INICIALIZAÇÃO
-    document.getElementById('manualRedirect').addEventListener('click', function(e) {
-        e.preventDefault();
-        redirectToWhatsApp();
-    });
-
-    // Dispara após 100ms para garantir carregamento
-    setTimeout(redirectToWhatsApp, 100);
-    </script>
-</body>
-</html>
+  // 3. Debug completo
+  const fbclid = new URLSearchParams(window.location.search).get('fbclid');
+  if (fbclid) {
+    console.log('[SANITIZED] FBclID:', fbclid, 
+              '\nStorage:', JSON.stringify(localStorage, null, 2),
+              '\nCookies:', document.cookie);
+  }
+})();
+</script>
