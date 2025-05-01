@@ -25,125 +25,100 @@
             cursor: pointer;
             margin-right: 10px;
         }
+        .loading {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 18px;
+        }
     </style>
     
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
-
-    <!-- Sistema Inteligente de Redirecionamento -->
+    <!-- SANITIZAÇÃO INICIAL -->
     <script>
-        // Limpeza inicial do localStorage (remove dados desnecessários)
-        (function() {
-            const keysToKeep = ['ultimo_fbclid'];
-            Object.keys(localStorage).forEach(key => {
-                if (!keysToKeep.includes(key)) localStorage.removeItem(key);
-            });
-            
-            // Remove cookie do fbclid se existir
-            document.cookie = 'fbclid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        })();
-
-        // Configurações personalizáveis
-        const CONFIG = {
-            whatsappNumber: "5512996450216",
-            defaultMessage: "Olá, vi esse anuncio quero saber mais",
-            debugMode: new URLSearchParams(window.location.search).has('debug'),
-            fbclid: new URLSearchParams(window.location.search).get('fbclid') || ''
-        };
-
-        // Armazena dados para rastreamento
-        if(CONFIG.fbclid) {
-            localStorage.setItem('ultimo_fbclid', CONFIG.fbclid);
-            console.log('[RASTREIO] FBclID armazenado:', CONFIG.fbclid);
-            
-            window.dataLayer = window.dataLayer || [];
-            dataLayer.push({
-                'event': 'fbclid_capturado',
-                'fbclid': CONFIG.fbclid,
-                'timestamp': new Date().toISOString()
-            });
-        }
-
-        // Função de redirecionamento inteligente
-        function redirectToWhatsApp() {
-            const encodedMessage = encodeURIComponent(CONFIG.defaultMessage);
-            const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-            const whatsappUrl = isMobile ?
-                `whatsapp://send?phone=${CONFIG.whatsappNumber}&text=${encodedMessage}` :
-                `https://web.whatsapp.com/send?phone=${CONFIG.whatsappNumber}&text=${encodedMessage}`;
-
-            if(CONFIG.debugMode) {
-                showDebugPanel(whatsappUrl);
-                console.log('[DEBUG] Redirecionamento simulado:', whatsappUrl);
-            } else {
-                // Adicionado fallback com meta refresh
-                const fallbackHtml = `
-                    <meta http-equiv="refresh" content="3;url=${whatsappUrl}">
-                    <script>
-                        setTimeout(function() {
-                            window.location.href = '${whatsappUrl}';
-                        }, 150);
-                    </script>
-                `;
-                document.write(fallbackHtml);
-            }
-        }
-
-        // Painel de debug visual (versão segura)
-        function showDebugPanel(url) {
-            const panel = document.createElement('div');
-            panel.className = 'debug-panel';
-            
-            try {
-                panel.innerHTML = `
-                    <h3>🚦 MODO DEBUG ATIVO</h3>
-                    <p><strong>FBclID:</strong> ${CONFIG.fbclid || 'Não encontrado'}</p>
-                    <p><strong>URL WhatsApp:</strong> ${url}</p>
-                    <p><strong>LocalStorage:</strong> ${localStorage.getItem('ultimo_fbclid') || 'Vazio'}</p>
-                    <button class="debug-btn" onclick="window.location.href='${url}'">Testar Redirecionamento</button>
-                    <button class="debug-btn" onclick="this.parentNode.remove()">Fechar Debug</button>
-                `;
-                document.body.insertBefore(panel, document.body.firstChild);
-            } catch(e) {
-                console.error('Erro ao criar debug panel:', e);
-            }
-        }
-
-        // Inicia o processo
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                redirectToWhatsApp();
-            } catch(e) {
-                console.error('Erro no redirecionamento:', e);
-                // Fallback extremo
-                window.location.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.defaultMessage)}`;
-            }
+    (function() {
+        // Limpeza radical do storage
+        const keysToKeep = ['ultimo_fbclid'];
+        Object.keys(localStorage).forEach(key => {
+            if (!keysToKeep.includes(key)) localStorage.removeItem(key);
         });
+
+        // Remove todos os cookies do domínio
+        document.cookie.split(';').forEach(c => {
+            const key = c.trim().split('=')[0];
+            document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${location.hostname}`;
+        });
+
+        // Captura o fbclid da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('fbclid')) {
+            const cleanFbclid = urlParams.get('fbclid').replace(/[^\w.-]/g, '');
+            localStorage.setItem('ultimo_fbclid', cleanFbclid);
+            console.log('[RASTREIO] FBclID armazenado:', cleanFbclid);
+        }
+    })();
     </script>
 </head>
 <body>
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXX" height="0" width="0" style="display:none;visibility:hidden"></iframe>
-        <p style="text-align: center; margin-top: 50px;">
-            JavaScript está desativado. <a href="https://wa.me/5512996450216?text=Olá, vi esse anuncio quero saber mais">Clique aqui</a> para continuar.
-        </p>
-    </noscript>
-    
-    <div style="text-align: center; margin-top: 50px;">
+    <div class="loading">
         <p>Redirecionando para o WhatsApp...</p>
         <p><small>Se não for redirecionado automaticamente, <a href="#" id="manualRedirect">clique aqui</a></small></p>
     </div>
 
     <script>
-        // Fallback manual seguro
-        document.getElementById('manualRedirect')?.addEventListener('click', function(e) {
-            e.preventDefault();
+    // CONFIGURAÇÕES PRINCIPAIS (EDITÁVEIS)
+    const CONFIG = {
+        whatsappNumber: "5512996450216",  // SEU NÚMERO AQUI
+        defaultMessage: "Olá, vi seu anúncio e quero saber mais!",  // MENSAGEM PADRÃO
+        debugMode: new URLSearchParams(window.location.search).has('debug')
+    };
+
+    // FUNÇÃO DE REDIRECIONAMENTO
+    function redirectToWhatsApp() {
+        const encodedMsg = encodeURIComponent(CONFIG.defaultMessage);
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        const whatsappUrl = isMobile ?
+            `whatsapp://send?phone=${CONFIG.whatsappNumber}&text=${encodedMsg}` :
+            `https://web.whatsapp.com/send?phone=${CONFIG.whatsappNumber}&text=${encodedMsg}`;
+
+        if (CONFIG.debugMode) {
+            showDebugPanel(whatsappUrl);
+        } else {
+            // Sistema de fallback em 3 camadas
             try {
-                redirectToWhatsApp();
-            } catch {
-                window.location.href = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.defaultMessage)}`;
+                window.location.href = whatsappUrl;
+            } catch (e) {
+                document.body.innerHTML = `
+                    <meta http-equiv="refresh" content="0;url=${whatsappUrl}">
+                    <div class="loading">
+                        <p>Redirecionamento falhou. <a href="${whatsappUrl}">Clique para abrir manualmente</a></p>
+                    </div>
+                `;
             }
-        });
+        }
+    }
+
+    // PAINEL DEBUG (APENAS EM MODO DEBUG)
+    function showDebugPanel(url) {
+        const panel = document.createElement('div');
+        panel.className = 'debug-panel';
+        panel.innerHTML = `
+            <h3>🚦 MODO DEBUG ATIVO</h3>
+            <p><strong>Número WhatsApp:</strong> ${CONFIG.whatsappNumber}</p>
+            <p><strong>FBclID:</strong> ${localStorage.getItem('ultimo_fbclid') || 'Não encontrado'}</p>
+            <p><strong>URL Gerada:</strong> ${url}</p>
+            <button class="debug-btn" onclick="window.location.href='${url}'">Testar Redirecionamento</button>
+            <button class="debug-btn" onclick="this.parentNode.remove()">Fechar Debug</button>
+        `;
+        document.body.appendChild(panel);
+    }
+
+    // INICIALIZAÇÃO
+    document.getElementById('manualRedirect').addEventListener('click', function(e) {
+        e.preventDefault();
+        redirectToWhatsApp();
+    });
+
+    // Dispara após 100ms para garantir carregamento
+    setTimeout(redirectToWhatsApp, 100);
     </script>
 </body>
 </html>
