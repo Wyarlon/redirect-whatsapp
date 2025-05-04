@@ -148,7 +148,7 @@
 </head>
 <body>
     <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXX" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K3SZTP8L" height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
 
     <div class="container">
@@ -158,7 +158,7 @@
         </div>
         
         <h1>Quase lá!</h1>
-        <p>Estamos te redirecionando para o WhatsApp para finalizar seu pedido.</p>
+        <p>Estamos te redirecionando para o WhatsApp.</p>
         
         <div class="loader"></div>
         
@@ -177,7 +177,7 @@
     // CONFIGURAÇÕES
     const CONFIG = {
         whatsappNumber: "5512996450216", // SUBSTITUA pelo seu número
-        defaultMessage: "Olá, vi seu anúncio e quero saber mais sobre a oferta principal!",
+        defaultMessage: "Olá, vi seu anúncio e quero saber mais!",
         debugMode: new URLSearchParams(window.location.search).has('debug')
     };
 
@@ -218,7 +218,7 @@
         });
         
         // Delay para carregar elementos visuais antes do redirecionamento
-        setTimeout(redirectToWhatsApp, 1500);
+        setTimeout(redirectToWhatsApp, 3000);
     });
     </script>
 </body>
