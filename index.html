@@ -1,42 +1,225 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecionando para o WhatsApp | Sua Marca</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Atualização de Cookies (PRIMEIRO SCRIPT) -->
+    <!-- Sincronização do FBclID -->
     <script>
-        // Limpa cookies antigos
-        document.cookie = '_fbp=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.github.io';
-        document.cookie = '_fbc=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.github.io';
-
-        // Gera novos cookies se tiver fbclid
+    // Limpeza e atualização do FBclID
+    (function() {
+        // Remove versões antigas
+        ['ultimo_fbcfid', 'fbcild_salvo'].forEach(chave => {
+            localStorage.removeItem(chave);
+        });
+        
+        // Atualiza com o valor atual da URL
         const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('fbclid')) {
-            const fbclid = urlParams.get('fbclid');
-            const timestamp = Math.floor(Date.now()/1000);
-            const fbp = `fb.2.${timestamp}.${Math.random().toString(36).substr(2,9)}`;
-            const fbc = `fb.1.${timestamp}.${fbclid}`;
-            
-            document.cookie = `_fbp=${fbp}; max-age=7776000; path=/; domain=.github.io`;
-            document.cookie = `_fbc=${fbc}; max-age=7776000; path=/; domain=.github.io`;
+        if (urlParams.has('fbclid')) {
+            const fbclid = urlParams.get('fbclid').replace(/[^\w.-]/g, '');
             localStorage.setItem('ultimo_fbclid', fbclid);
         }
+    })();
     </script>
 
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-K3SZTP8L');</script>
-    
-    <!-- Seu CSS aqui -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
+
+    <style>
+        :root {
+            --primary: #25D366;
+            --dark: #075E54;
+            --light: #DCF8C6;
+            --white: #FFFFFF;
+            --text: #333333;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .whatsapp-icon {
+            background-color: var(--primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 25px;
+            animation: pulse 2s infinite;
+        }
+        
+        .whatsapp-icon img {
+            width: 30px;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        
+        .btn:hover {
+            background-color: var(--dark);
+            transform: translateY(-2px);
+        }
+        
+        .loader {
+            margin: 30px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .debug-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 14px;
+            text-align: left;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <!-- Seu conteúdo de redirecionamento -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K3SZTP8L" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+
+    <div class="container">
+        <!-- Logo da sua marca -->
+        <div class="whatsapp-icon">
+            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670051.png" alt="WhatsApp">
+        </div>
+        
+        <h1>Quase lá!</h1>
+        <p>Estamos te redirecionando para o WhatsApp.</p>
+        
+        <div class="loader"></div>
+        
+        <p><small>Se o redirecionamento não funcionar automaticamente</small></p>
+        <a href="#" id="manualRedirect" class="btn">Clique para abrir o WhatsApp</a>
+        
+        <!-- Debug info (aparece apenas com ?debug=true) -->
+        <div id="debugPanel" class="debug-info">
+            <h3>Informações de Debug</h3>
+            <p><strong>FBclID:</strong> <span id="debugFbclid"></span></p>
+            <p><strong>URL WhatsApp:</strong> <span id="debugUrl"></span></p>
+        </div>
+    </div>
+
     <script>
-        // Redireciona para WhatsApp após 3s
-        setTimeout(() => {
-            window.location.href = `https://wa.me/5512996450216?text=${encodeURIComponent("Olá, vi seu anúncio!")}`;
-        }, 3000);
+    // CONFIGURAÇÕES
+    const CONFIG = {
+        whatsappNumber: "5512996450216", // SUBSTITUA pelo seu número
+        defaultMessage: "Olá, vi seu anúncio e quero saber mais!",
+        debugMode: new URLSearchParams(window.location.search).has('debug')
+    };
+
+    // FUNÇÃO DE REDIRECIONAMENTO
+    function redirectToWhatsApp() {
+        const encodedMsg = encodeURIComponent(CONFIG.defaultMessage);
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        const whatsappUrl = isMobile ?
+            `whatsapp://send?phone=${CONFIG.whatsappNumber}&text=${encodedMsg}` :
+            `https://web.whatsapp.com/send?phone=${CONFIG.whatsappNumber}&text=${encodedMsg}`;
+
+        if (CONFIG.debugMode) {
+            // Modo debug - mostra informações
+            document.getElementById('debugPanel').style.display = 'block';
+            document.getElementById('debugFbclid').textContent = localStorage.getItem('ultimo_fbclid') || 'Não encontrado';
+            document.getElementById('debugUrl').textContent = whatsappUrl;
+            document.getElementById('manualRedirect').href = whatsappUrl;
+        } else {
+            // Redirecionamento automático
+            window.location.href = whatsappUrl;
+            setTimeout(() => {
+                document.body.innerHTML = `
+                    <div class="container">
+                        <h1>Ops, algo deu errado!</h1>
+                        <p>Não conseguimos redirecionar automaticamente.</p>
+                        <a href="${whatsappUrl}" class="btn">Abrir WhatsApp Agora</a>
+                    </div>
+                `;
+            }, 3000);
+        }
+    }
+
+    // INICIALIZAÇÃO
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('manualRedirect').addEventListener('click', function(e) {
+            e.preventDefault();
+            redirectToWhatsApp();
+        });
+        
+        // Delay para carregar elementos visuais antes do redirecionamento
+        setTimeout(redirectToWhatsApp, 3000);
+    });
     </script>
 </body>
 </html>
