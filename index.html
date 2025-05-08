@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -8,26 +8,48 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Sincronização do FBclID -->
+    <!-- Controle de Cookies e FBclID (PRIMEIRO SCRIPT) - VERSÃO CORRIGIDA -->
     <script>
-    // Limpeza e atualização do FBclID
-    (function() {
-        // Remove versões antigas
-        ['ultimo_fbcfid', 'fbcild_salvo'].forEach(chave => {
-            localStorage.removeItem(chave);
-        });
+    // 1. Função para deletar cookies de forma confiável
+    function deleteCookie(name) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        // Tentativa adicional sem especificar domínio (para GitHub Pages)
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname + ';';
+    }
+
+    // 2. Limpeza inicial dos cookies
+    deleteCookie('_fbp');
+    deleteCookie('_fbc');
+
+    // 3. Limpeza do localStorage
+    ['ultimo_fbcfid', 'fbcild_salvo'].forEach(chave => localStorage.removeItem(chave));
+
+    // 4. Atualização com valores novos (se existir fbclid)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('fbclid')) {
+        const fbclid = urlParams.get('fbclid').replace(/[^\w.-]/g, '');
+        const timestamp = Math.floor(Date.now()/1000);
         
-        // Atualiza com o valor atual da URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('fbclid')) {
-            const fbclid = urlParams.get('fbclid').replace(/[^\w.-]/g, '');
-            localStorage.setItem('ultimo_fbclid', fbclid);
+        // Salva no localStorage
+        localStorage.setItem('ultimo_fbclid', fbclid);
+        
+        // Gera novos cookies (sem especificar domínio para funcionar no GitHub Pages)
+        document.cookie = `_fbp=fb.2.${timestamp}.${Math.random().toString(36).substr(2,9)}; max-age=7776000; path=/;`;
+        document.cookie = `_fbc=fb.1.${timestamp}.${fbclid}; max-age=7776000; path=/;`;
+        
+        // Debug
+        if(urlParams.has('debug')) {
+            console.log('Cookies atualizados:', {
+                fbclid: fbclid,
+                _fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1],
+                _fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1]
+            });
         }
-    })();
+    }
     </script>
 
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-K3SZTP8L');</script>
 
     <style>
         :root {
@@ -152,7 +174,6 @@
     </noscript>
 
     <div class="container">
-        <!-- Logo da sua marca -->
         <div class="whatsapp-icon">
             <img src="https://cdn-icons-png.flaticon.com/512/3670/3670051.png" alt="WhatsApp">
         </div>
@@ -165,18 +186,18 @@
         <p><small>Se o redirecionamento não funcionar automaticamente</small></p>
         <a href="#" id="manualRedirect" class="btn">Clique para abrir o WhatsApp</a>
         
-        <!-- Debug info (aparece apenas com ?debug=true) -->
         <div id="debugPanel" class="debug-info">
             <h3>Informações de Debug</h3>
             <p><strong>FBclID:</strong> <span id="debugFbclid"></span></p>
             <p><strong>URL WhatsApp:</strong> <span id="debugUrl"></span></p>
+            <p><strong>Cookies:</strong> <span id="debugCookies"></span></p>
         </div>
     </div>
 
     <script>
     // CONFIGURAÇÕES
     const CONFIG = {
-        whatsappNumber: "5512996450216", // SUBSTITUA pelo seu número
+        whatsappNumber: "5512996450216",
         defaultMessage: "Olá, vi seu anúncio e quero saber mais!",
         debugMode: new URLSearchParams(window.location.search).has('debug')
     };
@@ -194,6 +215,10 @@
             document.getElementById('debugPanel').style.display = 'block';
             document.getElementById('debugFbclid').textContent = localStorage.getItem('ultimo_fbclid') || 'Não encontrado';
             document.getElementById('debugUrl').textContent = whatsappUrl;
+            document.getElementById('debugCookies').textContent = JSON.stringify({
+                _fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1],
+                _fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1]
+            }, null, 2);
             document.getElementById('manualRedirect').href = whatsappUrl;
         } else {
             // Redirecionamento automático
@@ -217,7 +242,6 @@
             redirectToWhatsApp();
         });
         
-        // Delay para carregar elementos visuais antes do redirecionamento
         setTimeout(redirectToWhatsApp, 3000);
     });
     </script>
